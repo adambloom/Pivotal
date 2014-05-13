@@ -1,0 +1,95 @@
+According to <a title="Wikibon" href="http://wikibon.org/wiki/v/Big_Data_Vendor_Revenue_and_Market_Forecast_2012-2017" target="_blank">Wikibon</a>, the big data market grew by 61% in 2013, and I am going to show anyone with SQL skills how to quickly and easily set up a “Hadoop + SQL” cluster using pictures instead of words wherever possible.
+
+As technologists, we don’t have to look any further than a couple of job trend sites to realize Hadoop skills are growing when compared to SQL. The demand over time and volume in these two charts for <a title="SQL" href="http://www.indeed.com/jobanalytics/jobtrends?q=SQL" target="_blank">SQL</a> and <a title="Hadoop" href="http://www.indeed.com/jobtrends?q=Hadoop" target="_blank">Hadoop</a> are alarmingly different. Technology is also bringing these worlds together, and SQL queries can now run on Hadoop with capabilities like Pivotal GemFire XD and Pivotal HAWQ on <a title="Pivotal HD" href="http://www.gopivotal.com/big-data/pivotal-hd" target="_blank">Pivotal HD</a>.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/Screen-Shot-2014-05-13-at-9.11.58-AM.png"><img class="alignnone size-full wp-image-8427" alt="Job_Trends" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/Screen-Shot-2014-05-13-at-9.11.58-AM.png" width="821" height="340" /></a>
+
+If you aren’t familiar with Hadoop, we recently explained <a title="Hadoop in 5 Pictures" href="http://blog.gopivotal.com/pivotal/products/demystifying-hadoop-in-5-pictures" target="_blank">Hadoop in 5 Pictures</a> and provided a “<a title="Hadoop 101" href="http://blog.gopivotal.com/pivotal/products/hadoop-101-programming-mapreduce-with-native-libraries-hive-pig-and-cascading" target="_blank">Hadoop 101</a>” to introduce people to Hadoop programming. These are both good, foundational background explanations before we dive into our set-up.
+<h3><b>Overview: Getting Familiar with the SQL on Hadoop Environment</b></h3>
+It used to take some heavy lifting to set up Hadoop or put SQL on Hadoop—that is now a thing of the past. We’ve previously posted a way to <a title="set up the Pivotal HD (Hadoop) environment using Vagrant" href="http://blog.gopivotal.com/pivotal/products/in-45-min-set-up-hadoop-pivotal-hd-on-a-multi-vm-cluster-run-test-data" target="_blank">set up the Pivotal HD (Hadoop) environment using Vagrant</a> as well as <a title="Pivotal HD (Hadoop) on Docker" href="http://blog.gopivotal.com/pivotal/products/6-easy-steps-deploy-pivotals-hadoop-on-docker" target="_blank">Pivotal HD (Hadoop) on Docker</a>. Below, I am going to perform a straightforward install of Pivotal HD 2.0 and HAWQ 1.2.0 (SQL on Hadoop) using the Pivotal Command Center (PCC) 2.2.1 graphical user interface.
+
+In the Pivotal architecture diagram below, there are many elements—as noted in the legend, you can see the dark gray items are all Apache components and the green ones are Pivotal. We are going to first set up PCC—the green box on the right—and use PCC’s graphical user interface (UI) to set up the rest—a Pivotal HD (Hadoop) cluster and HAWQ Advanced Database Services (SQL interface to Hadoop).
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/Pivotal_Architecture.png"><img class="alignnone size-full wp-image-8428" alt="Pivotal_Architecture" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/Pivotal_Architecture.png" width="977" height="385" /></a>
+<h3><b>Understanding and Installing the Pivotal Command Center</b></h3>
+Like other command centers, the Pivotal Command Center (PCC) allows you to configure, deploy, monitor, and manage systems. In this case, we can manage multiple Pivotal HD clusters and use PCC’s graphical UI, command line interface, or RESTful web services API to deploy a cluster with various components.
+
+Pivotal Command Center provides a PostgreSQL database, Puppet Server, and a management application to:
+<ul>
+	<li>Manage users and profiles</li>
+	<li>Create, stop, start, and delete clusters</li>
+	<li>Check deployment status via a main dashboard or drill into detailed metrics</li>
+	<li>Monitor MapReduce jobs, YARN, and HAWQ queries</li>
+	<li>View and alter the cluster topology</li>
+	<li>Capture, filter, and search log files</li>
+</ul>
+The Pivotal Command Center installation requires a few <a title="prerequisites" href="http://docs.gopivotal.com/pivotalhd/PCCInstallationChecklist.html" target="_blank">prerequisites</a>, and the <a title="install" href="http://docs.gopivotal.com/pivotalhd/PCCInstallationChecklist.html" target="_blank">install</a> is pretty straightforward—especially when compared to the myriad of install steps and files for setting up an entire Hadoop environment. Of course, there is also a lot <a title="more detail about the install" href="http://docs.gopivotal.com/pivotalhd/InstallingPCC.html" target="_blank">more detail about the install</a> for those who want or need it.
+
+At a high level, the <a title="install" href="http://docs.gopivotal.com/pivotalhd/PCCInstallationChecklist.html" target="_blank">install</a> of Pivotal Command Center includes 1) putting some tar files in a directory, 2) running an install script, and 3) importing the JDK. Lastly, we have to move and import the tarballs that represent the installs for other items in the diagram above, namely the Apache and HAWQ elements. After the PCC is installed, the UI, CLI, or API can be used to create many clusters of components as shown in the diagram below.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/Pivotal_Command_Center_Architecture.png"><img class="alignnone size-full wp-image-8429" alt="Pivotal_Command_Center_Architecture" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/Pivotal_Command_Center_Architecture.png" width="977" height="489" /></a>
+<h3><b>Logging In and Using the Wizard to Create a Cluster</b></h3>
+The following sets of screen shots are going to walk you through the Pivotal Command Center wizard and explain how to configure, deploy, and test the environment.
+<h4><b>1. Log In and Begin</b></h4>
+Once PCC is stalled, we can log in at <b>https://CommandCenterHost:5443</b>, and we will see a cluster status view. Since this is our first time running PCC, the status is empty. Start by pressing the “Add Cluster” button.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/01_Pivotal-Command-Center_GUI-Login.png"><img class="alignnone size-full wp-image-8430" alt="01_Pivotal-Command-Center_GUI-Login" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/01_Pivotal-Command-Center_GUI-Login.png" width="1391" height="895" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/02_Pivotal-Command-Center_GUI-Add-Cluster.png"><img class="alignnone size-full wp-image-8431" alt="02_Pivotal-Command-Center_GUI-Add-Cluster" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/02_Pivotal-Command-Center_GUI-Add-Cluster.png" width="1391" height="895" /></a>
+<h4><b>2. Start the Wizard</b></h4>
+Next, the Add Cluster Wizard runs, and we press the “Get Started” button to start. Then, we will create a new “Cluster Definition.” Note, you can also change an existing cluster configuration.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/03_Pivotal-Command-Center_GUI-Wizard-Get-Started.png"><img class="alignnone size-full wp-image-8432" alt="03_Pivotal-Command-Center_GUI-Wizard-Get-Started" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/03_Pivotal-Command-Center_GUI-Wizard-Get-Started.png" width="1391" height="895" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/04_Pivotal-Command-Center_GUI-Create-New-Cluster-Definition.png"><img class="alignnone size-full wp-image-8433" alt="04_Pivotal-Command-Center_GUI-Create-New-Cluster-Definition" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/04_Pivotal-Command-Center_GUI-Create-New-Cluster-Definition.png" width="1391" height="895" /></a>
+<h4><b>3. Define the Version, Services, and Hosts</b></h4>
+Next, we give our new cluster a name, list the target hosts, enter a couple of passwords (for root and GPAdmin), provide a JDK file name, and select from a set of install flags/options. For the flags, we will go ahead and disable the SELinux, disable IPTables, run ScanHosts, and Setup NTP—you can learn more about those later.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/05_Pivotal-Command-Center_GUI-Name-Cluster-and-Hosts.png"><img class="alignnone size-full wp-image-8434" alt="05_Pivotal-Command-Center_GUI-Name-Cluster-and-Hosts" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/05_Pivotal-Command-Center_GUI-Name-Cluster-and-Hosts.png" width="1391" height="938" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/06a_Pivotal-Command-Center_GUI-Provide-Passwords-JDK-Filename.png"><img class="alignnone size-full wp-image-8435" alt="06a_Pivotal-Command-Center_GUI-Provide-Passwords-JDK-Filename" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/06a_Pivotal-Command-Center_GUI-Provide-Passwords-JDK-Filename.png" width="1391" height="895" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/06b_Pivotal-Command-Center_GUI-Set-Flags.png"><img class="alignnone size-full wp-image-8436" alt="06b_Pivotal-Command-Center_GUI-Set-Flags" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/06b_Pivotal-Command-Center_GUI-Set-Flags.png" width="1391" height="894" /></a>
+<h4><b>4. Host Verification</b></h4>
+The Pivotal Command Center verifies connections to the hosts listed and notes any error or informational messages.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/07_Pivotal-Command-Center_GUI-Add-Cluster-Wizard.png"><img class="alignnone size-full wp-image-8437" alt="07_Pivotal-Command-Center_GUI-Add-Cluster-Wizard" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/07_Pivotal-Command-Center_GUI-Add-Cluster-Wizard.png" width="1391" height="894" /></a>
+<h4><b>5. Set Up the Topology</b></h4>
+Next, we identify which hosts are hosting each service. This includes clients for Pig, Hive, HBase, and Mahout libraries as well as distributed services for HDFS, YARN, HBASE, Hive, ZooKeeper, HAWQ, GPXF, Mahout, and Pig.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/08a_Pivotal-Command-Center_GUI-Set-Cluster-Topology-A.png"><img class="alignnone size-full wp-image-8438" alt="08a_Pivotal-Command-Center_GUI-Set-Cluster-Topology-A" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/08a_Pivotal-Command-Center_GUI-Set-Cluster-Topology-A.png" width="1391" height="894" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/09_Pivotal-Command-Center_GUI-Set-Cluster-Topology-B-HDFS.png"><img class="alignnone size-full wp-image-8439" alt="09_Pivotal-Command-Center_GUI-Set-Cluster-Topology-B-HDFS" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/09_Pivotal-Command-Center_GUI-Set-Cluster-Topology-B-HDFS.png" width="1391" height="894" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/10_Pivotal-Command-Center_GUI-Set-Cluster-Topology-C-YARN.png"><img class="alignnone size-full wp-image-8440" alt="10_Pivotal-Command-Center_GUI-Set-Cluster-Topology-C-YARN" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/10_Pivotal-Command-Center_GUI-Set-Cluster-Topology-C-YARN.png" width="1437" height="967" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/11_Pivotal-Command-Center_GUI-Set-Cluster-Topology-D-HBASE.png"><img class="alignnone size-full wp-image-8441" alt="11_Pivotal-Command-Center_GUI-Set-Cluster-Topology-D-HBASE" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/11_Pivotal-Command-Center_GUI-Set-Cluster-Topology-D-HBASE.png" width="1437" height="967" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/12_Pivotal-Command-Center_GUI-Set-Cluster-Topology-E-Hive.png"><img class="alignnone size-full wp-image-8444" alt="12_Pivotal-Command-Center_GUI-Set-Cluster-Topology-E-Hive" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/12_Pivotal-Command-Center_GUI-Set-Cluster-Topology-E-Hive.png" width="1391" height="938" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/13_Pivotal-Command-Center_GUI-Set-Cluster-Topology-F-ZooKeeper1.png"><img class="alignnone size-full wp-image-8445" alt="13_Pivotal-Command-Center_GUI-Set-Cluster-Topology-F-ZooKeeper" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/13_Pivotal-Command-Center_GUI-Set-Cluster-Topology-F-ZooKeeper1.png" width="1391" height="938" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/14_Pivotal-Command-Center_GUI-Set-Cluster-Topology-G-HAWQ.png"><img class="alignnone size-full wp-image-8446" alt="14_Pivotal-Command-Center_GUI-Set-Cluster-Topology-G-HAWQ" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/14_Pivotal-Command-Center_GUI-Set-Cluster-Topology-G-HAWQ.png" width="1440" height="1080" /></a>
+<h4><b>6. Configure the Environment</b></h4>
+The PCC then lists all configuration files as populated by the wizard—XML, sh, properties, and config files for all the components. Here you can review and edit as needed. At this point, it is important to consider how default values might need to change for properties like JVM size. However, we are not going through these in detail for this post. Click next.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/16-no15_Pivotal-Command-Center_GUI-Review-Edit-XML-Config.png"><img class="alignnone size-full wp-image-8447" alt="16-no15_Pivotal-Command-Center_GUI-Review-Edit-XML-Config" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/16-no15_Pivotal-Command-Center_GUI-Review-Edit-XML-Config.png" width="1386" height="1080" /></a>
+<h4><b>7. Validate and Check Deployment Status</b></h4>
+The system performs a validation step, and then we select “Deploy.” The system will then show the progression of the deployment with hostname, status, role, and messages. We will click next to see a summary of the successfully deployed cluster.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/17a_Pivotal-Command-Center_GUI-Ready-to-Deploy-Button.png"><img class="alignnone size-full wp-image-8448" alt="17a_Pivotal-Command-Center_GUI-Ready-to-Deploy-Button" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/17a_Pivotal-Command-Center_GUI-Ready-to-Deploy-Button.png" width="1440" height="1080" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/18c_Pivotal-Command-Center_GUI-Status-C.png"><img class="alignnone size-full wp-image-8449" alt="18c_Pivotal-Command-Center_GUI-Status-C" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/18c_Pivotal-Command-Center_GUI-Status-C.png" width="1440" height="897" /></a>
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/19_Pivotal-Command-Center_GUI-Successful-Deployment.png"><img class="alignnone size-full wp-image-8450" alt="19_Pivotal-Command-Center_GUI-Successful-Deployment" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/19_Pivotal-Command-Center_GUI-Successful-Deployment.png" width="1440" height="897" /></a>At this point, we can see the status with the name, version, services, and number of nodes successfully deployed. As mentioned, this functionality is available via command line and API as well.
+<h3><b>Review the Pivotal Command Center Dashboard</b></h3>
+We can now use the monitoring capabilities in PCC. The dashboard will give you the state of HDFS, YARN, HBase, Zookeeper, and Hive clusters. The Cluster Analysis screen will provide greater detail where you can filter metrics like CPU, disk bandwidth, network bandwidth, memory, and Swap I/O by service, category, or node. There are also screens for monitoring MapReduce Jobs and YARN apps as well as reviewing topology or drilling into logs.
+
+<a href="http://blog.gopivotal.com/wp-content/uploads/2014/05/YARN_Apps.png"><img class="alignnone size-full wp-image-8421" alt="YARN_Apps" src="http://blog.gopivotal.com/wp-content/uploads/2014/05/YARN_Apps.png" width="975" height="577" /></a>
+
+<b>For more information:</b>
+
+- Learn more about <a title="the Pivotal Big Data Suite" href="http://www.gopivotal.com/big-data/pivotal-big-data-suite" target="_blank">the Pivotal Big Data Suite</a>, including Pivotal HD, HAWQ, and GemFire XD
+- Read more about <a title="Pivotal HD" href="http://www.gopivotal.com/big-data/pivotal-hd" target="_blank">Pivotal HD</a>, including <a title="documentation" href="http://docs.gopivotal.com/pivotalhd/index.html" target="_blank">documentation</a> and <a title="downloads" href="https://network.gopivotal.com/products/pivotal-hd" target="_blank">downloads</a>
+- Find articles on <a title="big data" href="http://blog.gopivotal.com/tag/big-data" target="_blank">big data</a>, <a title="Hadoop" href="http://blog.gopivotal.com/tag/hadoop" target="_blank">Hadoop</a>, <a title="Pivotal HD" href="http://blog.gopivotal.com/tag/pivotal-hd" target="_blank">Pivotal HD</a>, <a title="HAWQ" href="http://blog.gopivotal.com/tag/hawq" target="_blank">HAWQ</a>, and <a title="GemFire" href="http://blog.gopivotal.com/tag/gemfire" target="_blank">GemFire</a>
+- Check out case studies on GemFire at <a title="EMC" href="http://blog.gopivotal.com/pivotal/case-studies-2/emc-qa-part-1-reduced-costs-10-200x-performance-improvements-with-pivotal-gemfire-sqlfire" target="_blank">EMC</a>, <a title="SBI Securities" href="http://blog.gopivotal.com/pivotal/case-studies-2/case-study-sbi-securities-gemfire-improved-performance-at-a-lower-cost" target="_blank">SBI Securities</a>, <a title="China Railways Corporation" href="http://blog.gopivotal.com/pivotal/case-studies-2/china-railway-corp-for-chinese-new-year-chunyun" target="_blank">China Railways Corporation</a>, and <a title="GIRE" href="http://blog.gopivotal.com/pivotal/case-studies-2/how-argentina-pays-its-bills-19-million-cash-transactions-a-month-on-unreliable-networks-with-pivotal-gemfire-and-spring" target="_blank">GIRE</a>.
